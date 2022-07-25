@@ -1,0 +1,10 @@
+redis:
+  namespace: resque:container-ci
+  host: localhost
+  scheme: redis
+  port: 6379
+
+projects:
+  container-ci:
+    git: https://github.com/jeroennijhof/container-ci.git
+    trigger: efc989af-25fe-4527-b49e-f50cb05bed59
