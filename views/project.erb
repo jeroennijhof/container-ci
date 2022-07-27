@@ -68,8 +68,13 @@
         --bs-spinner-border-width: 0.15em;
       }
 
-      .popover {
-        --bs-popover-max-width: auto !important;
+      .modal {
+        --bs-modal-width: 60% !important;
+      }
+
+      pre {
+        background: #282b2e;
+        padding: 5px;
       }
     </style>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
@@ -93,11 +98,6 @@ function build(trigger_id) {
     }
   });
 }
-
-$(document).ready(function(){
-  const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-  const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl))
-});
     </script>
   </head>
   <body class="bg-light">
@@ -126,14 +126,30 @@ $(document).ready(function(){
     <table class="table">
       <tr>
         <th scope="col">Build</th>
+        <th scope="col">Status</th>
         <th scope="col">Steps</th>
       </tr>
     <% @project.builds.reverse_each do |key, value| %>
       <tr>
-        <td><%= key %></td>
-        <td>
+        <td class="align-middle"><%= key %></td>
+        <td class="fs-4"><i class="bi <%= @status[value.status] %>"></i></td>
+        <td class="col-10">
         <% value.steps.each do |step, output| %>
-          <button type="button" class="btn <%= @status[output['status']] %>" data-bs-toggle="popover" data-bs-title="<%= step %>" data-bs-content="<%= output['message'] %>" data-bs-html="true"><%= step %></button>
+          <button type="button" class="btn <%= @status_buttons[output['status']] %>" style="margin-right: 5px;" data-bs-toggle="modal" data-bs-target="#<%= step %><%= key %>"><%= step %></button>
+
+          <div class="modal fade" id="<%= step %><%= key %>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel"><%= step %></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <pre class="border border-dark rounded text-light"><code><%= output['message'] %></code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
         <% end %>
         </td>
       </tr>

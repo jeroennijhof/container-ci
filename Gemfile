@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'docker'
+gem 'docker-api'
 gem 'git'
 gem 'json'
 gem 'puma'

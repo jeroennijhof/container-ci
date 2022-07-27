@@ -1,4 +1,4 @@
-FROM ruby:3.0.4 AS production
+FROM ruby:3.0.4 AS stable
 WORKDIR /app
 COPY . ./
 
@@ -9,5 +9,5 @@ HEALTHCHECK CMD wget -Y off -q --spider http://localhost:9292/ || exit 1
 CMD bundle exec rackup -o0.0.0.0 -p9292
 
 
-FROM production AS test
+FROM stable AS test
 CMD bundle exec rspec

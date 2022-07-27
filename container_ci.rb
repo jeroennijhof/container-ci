@@ -18,7 +18,8 @@ class ContainerCi < Sinatra::Base
 
   get '/:project/?' do
     @project = project_get_name(params[:project])
-    @status = project_status_buttons
+    @status = project_status_classes
+    @status_buttons = project_status_buttons
     erb :project
   end
 
