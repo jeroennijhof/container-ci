@@ -7,13 +7,14 @@ require_relative '../models/project'
 class Initialize
   @queue = :initialize
 
-  def self.perform(project, project_settings, build)
+  def self.perform(project, project_settings, build, branch)
     project = Project.new(project, project_settings, Resque.redis.get(project))
     project.builds[build].steps['initialize'] = { 'status' => 'running', 'message' => '' }
     Resque.redis.set(project.name, project.builds.to_json)
 
     git = Git.clone(project_settings['git'], "workspace/#{project.name}/#{build}")
-    message = "Git commit #{git.log.last.sha}:<br/>#{git.log.last.message}"
+    git.checkout(branch)
+    message = "Branch: #{branch}<br/><br/>Git commit #{git.log.last.sha}:<br/>#{git.log.last.message}"
 
     status, message = parse_dockerfile(project.name,
                                        project_settings,
@@ -33,7 +34,7 @@ class Initialize
       stages.append(line.downcase.split(' as ')[1].chomp) if line.downcase.start_with?('from ')
     end
     Resque.enqueue(Build, project, project_settings, build, stages)
-    ['success', "#{message}<br/><br/>stages: #{stages.join(', ')}"]
+    ['success', "#{message}<br/><br/>Stages: #{stages.join(', ')}"]
   rescue StandardError => e
     ['failed', "#{message}<br/><br/>#{e.message}", []]
   end

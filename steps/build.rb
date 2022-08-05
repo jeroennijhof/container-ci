@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'docker'
+require_relative '../docker/docker'
 
 class Build
   @queue = :build
@@ -9,19 +9,18 @@ class Build
     project = Project.new(project, project_settings, Resque.redis.get(project))
     message = ''
 
+    project.builds[build].steps['build'] = { 'status' => 'running' }
+    Resque.redis.set(project.name, project.builds.to_json)
     stages.each do |stage|
-      message += "<br/>building stage: #{stage}<br/><br/>"
-      image = Docker::Image.build_from_dir('.', { target: stage }) do |v|
-        if (log = JSON.parse(v)) && log.key?('stream')
-          message += log['stream']
-          project.builds[build].steps['build'] = { 'status' => 'running', 'message' => message }
-          Resque.redis.set(project.name, project.builds.to_json)
-        end
+      message += "<br/>Building stage: #{stage}<br/><br/>"
+      Docker.build('.', '--target', stage, '-t', "#{project.name}/#{stage}:latest") do |stdout|
+        message += stdout
+        project.builds[build].steps['build']['message'] = message
+        Resque.redis.set(project.name, project.builds.to_json)
       end
-      image.tag({ repo: "#{project.name}/#{stage}", tag: 'latest' })
-      project.builds[build].steps['build']['status'] = 'success'
-      Resque.redis.set(project.name, project.builds.to_json)
     end
+    project.builds[build].steps['build']['status'] = 'success'
+    Resque.redis.set(project.name, project.builds.to_json)
     Resque.enqueue(Test, project.name, project_settings, build, stages)
   end
 end

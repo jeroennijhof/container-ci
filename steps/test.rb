@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'docker'
+require_relative '../docker/docker'
 
 class Test
   @queue = :test
@@ -9,18 +9,14 @@ class Test
     project = Project.new(project, project_settings, Resque.redis.get(project))
     message = ''
 
-    container = Docker::Container.create('Image' => "#{project.name}/test")
-    container.tap(&:start).attach do |stream, chunk|
-      message += "#{stream}: #{chunk}"
-      project.builds[build].steps['test'] = { 'status' => 'running', 'message' => message }
+    project.builds[build].steps['test'] = { 'status' => 'running' }
+    Resque.redis.set(project.name, project.builds.to_json)
+    Docker.run("#{project.name}/test") do |stdout|
+      message += stdout
+      project.builds[build].steps['test']['message'] = message
       Resque.redis.set(project.name, project.builds.to_json)
     end
-    status = 'success'
-    status = 'failed' unless container.wait['StatusCode'].zero?
-    container.remove
-
-    project.builds[build].steps['test']['status'] = status
-    project.builds[build].status = status
+    project.builds[build].steps['test']['status'] = 'success'
     Resque.redis.set(project.name, project.builds.to_json)
   end
 end

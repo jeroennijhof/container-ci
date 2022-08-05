@@ -35,19 +35,21 @@ module ProjectHelper
     }
   end
 
-  def project_trigger(trigger, _)
+  def project_trigger(trigger, params)
     settings.projects.each do |project, project_settings|
-      return project_initialize(project, project_settings) if project_settings['trigger'] == trigger
+      return project_initialize(project, project_settings, params) if project_settings['trigger'] == trigger
     end
 
     false
   end
 
-  def project_initialize(project, project_settings)
+  def project_initialize(project, project_settings, params)
+    branch = 'main'
+    branch = params['branch'] if params.key?('branch') && !params['branch'].empty?
     project = Project.new(project, project_settings, Resque.redis.get(project))
     build_index = project.builds.size + 1
     project.builds[build_index.to_s] = Build.new
     Resque.redis.set(project.name, project.builds.to_json)
-    Resque.enqueue(Initialize, project.name, project_settings, build_index.to_s)
+    Resque.enqueue(Initialize, project.name, project_settings, build_index.to_s, branch)
   end
 end

@@ -24,6 +24,6 @@ class ContainerCi < Sinatra::Base
   end
 
   post '/trigger/:trigger/?' do
-    halt 500, 'something went wrong' unless project_trigger(params[:trigger], body)
+    halt 500, 'something went wrong' unless project_trigger(params[:trigger], params)
   end
 end

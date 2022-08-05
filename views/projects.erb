@@ -77,7 +77,7 @@ function build(trigger_id) {
   $.ajax({
     type: "POST",
     url: "/trigger/" + trigger_id,
-    data: { "branch": "main" },
+    data: { "branch": $("#branch").val() },
     success: function (result) {
       $("#trigger-success").show(); 
       window.setTimeout(function () { 
@@ -130,7 +130,12 @@ function hide(alert_id) {
         <td class="fs-4"><i class="bi <%= @status[project.last_build.status] unless project.builds.empty? %>"></i></td>
         <td class="fs-5 align-middle"><a href="/<%= project.name %>"><%= project.name %></a></td>
         <td class="fs-5 align-middle"><%= project.last_build.timestamp unless project.builds.empty? %></td>
-        <td class="fs-4"><button onclick="build('<%= project.settings['trigger'] %>')" type="button" class="btn btn-outline-success">Build Now</button></a></td>
+        <td class="fs-4 col-2">
+          <div class="input-group">
+            <input id="branch" type="text" class="form-control" aria-label="branch" placeholder="branch">
+            <button onclick="build('<%= project.settings['trigger'] %>')" type="button" class="btn btn-outline-success">Build</button>
+          </div>
+        </td>
       </tr>
       <% end %>
     </table>
