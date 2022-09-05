@@ -12,3 +12,7 @@ CMD bundle exec rackup -o0.0.0.0 -p9292
 
 FROM stable AS test
 CMD bundle exec rspec
+
+
+FROM stable AS security-checks
+CMD bundle exec rspec
