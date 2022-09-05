@@ -93,6 +93,12 @@ function build(trigger_id) {
 function hide(alert_id) {
     $("#" + alert_id).hide(); 
 };
+
+$(document).ready(function () {
+  setTimeout(function () { 
+    window.location.reload()
+  }, 10000);
+});
     </script>
   </head>
   <body class="bg-light">

@@ -32,5 +32,9 @@ class Docker
     command('compose', '-f', 'docker-compose.yml', 'down', &block) if File.exist?("#{@workspace}/docker-compose.yml")
   end
 
+  def compose_port(service, port, &block)
+    command('compose', '-f', 'docker-compose.yml', 'port', service, port, &block)
+  end
+
   class Error < StandardError; end
 end

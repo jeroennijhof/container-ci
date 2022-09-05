@@ -19,11 +19,21 @@ module ProjectHelper
     raise "Project #{name} not found"
   end
 
+  def project_put_name(params)
+    raise 'Invalid status' unless %w[running pause success failed].include?(params[:status])
+
+    project = project_get_name(params[:project])
+    project.builds[params[:build]].steps[params[:step]]['status'] = params[:status]
+    project.builds[params[:build]].status = params[:status]
+    Resque.redis.set(project.name, project.builds.to_json)
+  end
+
   def project_status_classes
     {
       'success' => 'bi-check2-circle text-success',
       'failed' => 'bi-exclamation-circle text-danger',
-      'running' => 'spinner-border text-success'
+      'running' => 'spinner-border text-success',
+      'pause' => 'bi-pause-circle text-warning'
     }
   end
 
@@ -31,7 +41,8 @@ module ProjectHelper
     {
       'success' => 'btn-outline-success',
       'failed' => 'btn-outline-danger',
-      'running' => 'btn-outline-secondary'
+      'running' => 'btn-outline-secondary',
+      'pause' => 'btn-outline-warning'
     }
   end
 

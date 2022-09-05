@@ -82,6 +82,27 @@
     <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
+let timeoutID;
+let autoScroll = true;
+
+function getMessage(project, build, step) {
+  $.ajax({
+    type: "GET",
+    url: project + "/" + build + "/" + step + "/message",
+    success: function (result) {
+      $('#code' + build + step).html(result);
+      if (autoScroll) {
+        modal = $('#modal' + build + step + ' .modal-body');
+        modal.scrollTop(modal.get(0).scrollHeight);
+      }
+    }
+  });
+
+  timeoutID = setTimeout(function () { 
+    getMessage(project, build, step);
+  }, 2000);
+}
+
 function build(trigger_id) {
   $.ajax({
     type: "POST",
@@ -89,7 +110,7 @@ function build(trigger_id) {
     data: { "branch": "main" },
     success: function (result) {
       $("#trigger-success").show(); 
-      window.setTimeout(function () { 
+      timeoutID = window.setTimeout(function () { 
          $("#trigger-success").alert('close'); 
       }, 2000);
     },
@@ -98,6 +119,49 @@ function build(trigger_id) {
     }
   });
 }
+
+function setScroll(element) {
+  if (autoScroll) {
+    autoScroll = false;
+    element.textContent = 'Enable Auto Scroll';
+  } else {
+    autoScroll = true;
+    element.textContent = 'Disable Auto Scroll';
+  }
+};
+
+function setStatus(project, build, step, status) {
+  $.ajax({
+    type: "PUT",
+    url: project + "/" + build + "/" + step + "/status",
+    data: { "status": status }
+  });
+}
+
+$(document).ready(function() {
+  $('.modal').on('show.bs.modal', function(event) {
+    clearTimeout(timeoutID);
+    var button = $(event.relatedTarget);
+    getMessage(button.data('project'), button.data('build'), button.data('step'));
+  })
+
+  $('.modal').on('hidden.bs.modal', function(event) {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(function() { 
+      window.location.reload()
+    }, 10000);
+  })
+
+  $('#confirm button').on('click', function() {
+    var button = $(this);
+    setStatus(button.data('project'), button.data('build'), button.data('step'), button.data('status'));
+    $('#confirm button').hide();
+  });
+
+  timeoutID = setTimeout(function() { 
+    window.location.reload()
+  }, 10000);
+})
     </script>
   </head>
   <body class="bg-light">
@@ -135,17 +199,23 @@ function build(trigger_id) {
         <td class="fs-4"><i class="bi <%= @status[value.status] %>"></i></td>
         <td class="col-10">
         <% value.steps.each do |step, output| %>
-          <button type="button" class="btn <%= @status_buttons[output['status']] %>" style="margin-right: 5px;" data-bs-toggle="modal" data-bs-target="#<%= step %><%= key %>"><%= step %></button>
+          <% step_name = step.sub('_', ' ') %>
+          <button type="button" class="btn <%= @status_buttons[output['status']] %>" style="margin-right: 5px;" data-bs-toggle="modal" data-bs-target="#modal<%= key %><%= step %>" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>"><%= step_name %></button>
 
-          <div class="modal fade" id="<%= step %><%= key %>" tabindex="-1" aria-hidden="true">
+          <div class="modal fade" id="modal<%= key %><%= step %>" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="staticBackdropLabel"><%= step %></h5>
+                  <h5 class="modal-title" id="staticBackdropLabel"><%= step_name %></h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  <pre class="border border-dark rounded text-light"><code><%= output['message'] %></code></pre>
+                  <pre class="border border-dark rounded text-light"><code id="code<%= key %><%= step %>"><%= output['message'] %></code></pre>
+                  <div class="d-flex flex-row">
+                    <div id="confirm"><button type="button" class="btn btn-outline-success" style="margin-right: 10px;" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="running">Deploy!</button></div>
+                    <div id="confirm" class="flex-grow-1"><button type="button" class="btn btn-outline-secondary" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="success">Cancel</button></div>
+                    <div><button id="confirm" type="button" class="btn btn-outline-secondary" onclick="setScroll(this);">Disable Auto Scroll</button></div>
+                  </div>
                 </div>
               </div>
             </div>

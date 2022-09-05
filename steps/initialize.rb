@@ -29,11 +29,14 @@ class Initialize
 
   def self.parse_dockerfile(project, project_settings, build, path, message)
     stages = []
+    ports = []
     dockerfile = File.readlines(path)
     dockerfile.each do |line|
       stages.append(line.downcase.split(' as ')[1].chomp) if line.downcase.start_with?('from ')
+      ports.append(line.downcase.split(' ')[1].chomp) if line.downcase.start_with?('expose ')
     end
-    Resque.enqueue(Build, project, project_settings, build, stages)
+    dockerfile = { 'stages' => stages, 'ports' => ports }
+    Resque.enqueue(Build, project, project_settings, build, dockerfile)
     ['success', "#{message}<br/><br/>Stages: #{stages.join(', ')}"]
   rescue StandardError => e
     ['failed', "#{message}<br/><br/>#{e.message}", []]

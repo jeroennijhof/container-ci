@@ -8,3 +8,7 @@ projects:
   container-ci:
     git: https://github.com/jeroennijhof/container-ci.git
     trigger: efc989af-25fe-4527-b49e-f50cb05bed59
+    deploy:
+      test:
+        type: local
+        confirm: true

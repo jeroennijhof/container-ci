@@ -16,6 +16,7 @@ class Compose
     containers.each do |container|
       template[container['name']] = {}
       template[container['name']]['image'] = container['image']
+      template[container['name']]['ports'] = container['ports'] unless container['ports'].empty?
       template[container['name']]['deploy'] = {
         'mode' => 'replicated',
         'replicas' => 1,

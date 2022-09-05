@@ -2,7 +2,7 @@
 
 require_relative 'initialize'
 require_relative 'build'
-require_relative 'test'
+require_relative 'stage'
 require_relative 'deploy'
 
 module Step
