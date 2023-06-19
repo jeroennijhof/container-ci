@@ -16,6 +16,11 @@ class Initialize
     git.checkout(branch)
     message = "Branch: #{branch}<br/><br/>Git commit #{git.log.last.sha}:<br/>#{git.log.last.message}"
 
+    settings['env']['project'] = project_name
+    settings['env']['build'] = build
+    settings['env']['branch'] = branch
+    settings['env']['commit'] = git.log.last.sha
+
     status, message = parse_dockerfile(settings,
                                        project.name,
                                        build,

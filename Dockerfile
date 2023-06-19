@@ -15,4 +15,4 @@ CMD bundle exec rspec
 
 
 FROM stable AS security-checks
-CMD bundle exec rspec
+CMD bundle exec env

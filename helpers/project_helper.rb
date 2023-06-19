@@ -67,7 +67,7 @@ module ProjectHelper
   def settings_to_hash
     { docker: settings.docker,
       k8s: settings.k8s,
-      environment: settings.environment,
+      env: settings.env,
       projects: settings.projects }
   end
 end

@@ -1,37 +1,38 @@
-redis:
-  namespace: resque:container-ci
-  host: 172.17.0.1
-  ssl: false
-  port: 6379
+development:
+  redis:
+    namespace: resque:container-ci
+    host: 172.17.0.1
+    ssl: false
+    port: 6379
 
-registry:
-  enabled: false
-  uri: https://
-  username: username
-  token: token
+  registry:
+    enabled: false
+    uri: null
+    username: username
+    token: token
 
-docker:
-  uri: unix:///var/run/docker.sock
-  tls: false
-  tlscacert: /run/secrets/cacert.pem
-  tlscert: /run/secrets/cert.pem
-  tlskey: /run/secrets/key.pem
+  docker:
+    uri: unix:///var/run/docker.sock
+    tls: false
+    tlscacert: /run/secrets/cacert.pem
+    tlscert: /run/secrets/cert.pem
+    tlskey: /run/secrets/key.pem
 
-k8s:
-  uri: 127.0.0.1:6443
-  tls: true
-  tlscacert: /run/secrets/cacert.pem
-  tlscert: /run/secrets/cert.pem
-  tlskey: /run/secrets/key.pem
+  k8s:
+    uri: 127.0.0.1:6443
+    tls: true
+    tlscacert: /run/secrets/cacert.pem
+    tlscert: /run/secrets/cert.pem
+    tlskey: /run/secrets/key.pem
 
-environment:
-  test: test123
+  env:
+    test: test123
 
-projects:
-  container-ci:
-    git: https://github.com/jeroennijhof/container-ci.git
-    trigger: efc989af-25fe-4527-b49e-f50cb05bed59
-    deploy:
-      test:
-        type: docker
-        confirm: true
+  projects:
+    container-ci:
+      git: https://github.com/jeroennijhof/container-ci.git
+      trigger: efc989af-25fe-4527-b49e-f50cb05bed59
+      deploy:
+        test:
+          type: docker
+          confirm: true

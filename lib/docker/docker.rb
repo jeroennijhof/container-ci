@@ -6,6 +6,7 @@ require_relative 'compose'
 class Docker
   def initialize(settings, workspace)
     @settings = settings
+    @env = settings['env']
     @workspace = workspace
   end
 
@@ -24,7 +25,7 @@ class Docker
   end
 
   def command(*args)
-    stdin, stdout, stderr, waiter = Open3.popen3('docker', *connection, *args, chdir: @workspace)
+    stdin, stdout, stderr, waiter = Open3.popen3(@env, 'docker', *connection, *args, chdir: @workspace)
     stdin.close
     while (output = stdout.gets)
       yield output
@@ -33,7 +34,7 @@ class Docker
   end
 
   def command_err(*args)
-    stdin, stdout, stderr, waiter = Open3.popen3('docker', *connection, *args, chdir: @workspace)
+    stdin, stdout, stderr, waiter = Open3.popen3(@env, 'docker', *connection, *args, chdir: @workspace)
     stdin.close
     stdout.close
     while (output = stderr.gets)
