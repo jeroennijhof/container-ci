@@ -1,94 +1,14 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#712cf9">
-    <title>Container CI</title>
-    <style>
-      html,
-      body {
-        overflow-x: hidden; /* Prevent scroll on narrow devices */
-      }
-
-      body {
-        padding-top: 56px;
-      }
-
-      .nav-scroller .nav {
-        color: rgba(255, 255, 255, .75);
-      }
-
-      .nav-scroller .nav-link {
-        padding-top: .75rem;
-        padding-bottom: .75rem;
-        font-size: .875rem;
-        color: #6c757d;
-      }
-
-      .nav-scroller .nav-link:hover {
-        color: #007bff;
-      }
-
-      .nav-scroller .active {
-        font-weight: 500;
-        color: #343a40;
-      }
-
-      .bg-purple {
-        background-color: #6f42c1;
-      }
-
-      .bi {
-        vertical-align: -.125em;
-        fill: currentColor;
-      }
-
-      .nav-scroller {
-        position: relative;
-        z-index: 2;
-        height: 2.75rem;
-        overflow-y: hidden;
-      }
-
-      .nav-scroller .nav {
-        display: flex;
-        flex-wrap: nowrap;
-        padding-bottom: 1rem;
-        margin-top: -1px;
-        overflow-x: auto;
-        text-align: center;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      i.spinner-border {
-        --bs-spinner-width: 1.5rem;
-        --bs-spinner-height: 1.5rem;
-        --bs-spinner-border-width: 0.15em;
-      }
-
-      .modal {
-        --bs-modal-width: 60% !important;
-      }
-
-      pre {
-        background: #282b2e;
-        padding: 5px;
-      }
-    </style>
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap-icons.css">
-    <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-let timeoutID;
+<%= erb :header %>
+  <script type="text/javascript">
+let buildsID;
+let messageID;
 let autoScroll = true;
 
 function getMessage(project, build, step) {
   $.ajax({
     type: "GET",
     url: project + "/" + build + "/" + step + "/message",
+    ifModified: true,
     success: function (result) {
       $('#code' + build + step).html(result);
       if (autoScroll) {
@@ -97,28 +17,20 @@ function getMessage(project, build, step) {
       }
     }
   });
+};
 
-  timeoutID = setTimeout(function () { 
-    getMessage(project, build, step);
-  }, 2000);
-}
-
-function build(trigger_id) {
+function deleteBuilds() {
   $.ajax({
-    type: "POST",
-    url: "/trigger/" + trigger_id,
-    data: { "branch": "main" },
+    type: "DELETE",
+    url: "/<%= @project.name %>/builds",
     success: function (result) {
-      $("#trigger-success").show(); 
-      timeoutID = window.setTimeout(function () { 
-         $("#trigger-success").alert('close'); 
-      }, 2000);
+      location.reload();
     },
     error: function (result, status) {
-      $("#trigger-error").show(); 
+      $("#delete-error").show(); 
     }
   });
-}
+};
 
 function setScroll(element) {
   if (autoScroll) {
@@ -136,96 +48,54 @@ function setStatus(project, build, step, status) {
     url: project + "/" + build + "/" + step + "/status",
     data: { "status": status }
   });
-}
+};
+
+function getBuilds() {
+  $.ajax({
+    type: "GET",
+    url: "/<%= @project.name %>/builds",
+    ifModified: true,
+    success: function (result) {
+      $('#builds').html(result);
+
+      $('.modal').on('show.bs.modal', function(event) {
+        clearInterval(buildsID);
+        var button = $(event.relatedTarget);
+        getMessage(button.data('project'), button.data('build'), button.data('step'));
+        messageID = setInterval(getMessage, 2000, button.data('project'), button.data('build'), button.data('step'));
+      });
+
+      $('.modal').on('hidden.bs.modal', function(event) {
+        clearInterval(messageID);
+        buildsID = setInterval(getBuilds, 5000);
+      });
+
+      $('#confirm button').on('click', function() {
+        var button = $(this);
+        setStatus(button.data('project'), button.data('build'), button.data('step'), button.data('status'));
+        $('#confirm button').hide();
+      });
+    }
+  });
+};
 
 $(document).ready(function() {
-  $('.modal').on('show.bs.modal', function(event) {
-    clearTimeout(timeoutID);
-    var button = $(event.relatedTarget);
-    getMessage(button.data('project'), button.data('build'), button.data('step'));
-  })
-
-  $('.modal').on('hidden.bs.modal', function(event) {
-    clearTimeout(timeoutID);
-    timeoutID = setTimeout(function() { 
-      window.location.reload()
-    }, 10000);
-  })
-
-  $('#confirm button').on('click', function() {
-    var button = $(this);
-    setStatus(button.data('project'), button.data('build'), button.data('step'), button.data('status'));
-    $('#confirm button').hide();
-  });
-
-  timeoutID = setTimeout(function() { 
-    window.location.reload()
-  }, 10000);
-})
-    </script>
-  </head>
-  <body class="bg-light">
-  <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/"><i class="bi bi-box align-top me-3"></i>Container CI</a>
-  </div>
-  </nav>
-
-  <div class="nav-scroller bg-body shadow-sm">
-  <nav class="nav" aria-label="Secondary navigation">
-    <a class="nav-link active" aria-current="page" href="/">Dashboard</a>
-    <!-- <a class="nav-link" href="#">CustomLink</a> -->
-  </nav>
-  </div>
-
-  <main class="container">
+  getBuilds();
+  buildsID = setInterval(getBuilds, 5000);
+});
+  </script>
   <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
     <i class="bi bi-box me-3" width="48" height="38"></i>
     <div class="lh-1">
       <h1 class="h6 mb-0 text-white lh-1"><%= @project.name %></h1>
     </div>
+    <div class="d-flex ms-auto">
+      <button type="button" class="btn btn-outline-light" onclick="deleteBuilds()">cleanup</button>
+    </div>
   </div>
 
   <div class="my-3 p-3 bg-body rounded shadow-sm">
-    <table class="table">
-      <tr>
-        <th scope="col">Build</th>
-        <th scope="col">Status</th>
-        <th scope="col">Steps</th>
-      </tr>
-    <% @project.builds.reverse_each do |key, value| %>
-      <tr>
-        <td class="align-middle"><%= key %></td>
-        <td class="fs-4"><i class="bi <%= @status[value.status] %>"></i></td>
-        <td class="col-10">
-        <% value.steps.each do |step, output| %>
-          <% step_name = step.sub('_', ' ') %>
-          <button type="button" class="btn <%= @status_buttons[output['status']] %>" style="margin-right: 5px;" data-bs-toggle="modal" data-bs-target="#modal<%= key %><%= step %>" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>"><%= step_name %></button>
-
-          <div class="modal fade" id="modal<%= key %><%= step %>" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="staticBackdropLabel"><%= step_name %></h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <pre class="border border-dark rounded text-light"><code id="code<%= key %><%= step %>"><%= output['message'] %></code></pre>
-                  <div class="d-flex flex-row">
-                    <div id="confirm"><button type="button" class="btn btn-outline-success" style="margin-right: 10px;" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="running">Deploy!</button></div>
-                    <div id="confirm" class="flex-grow-1"><button type="button" class="btn btn-outline-secondary" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="success">Cancel</button></div>
-                    <div><button id="confirm" type="button" class="btn btn-outline-secondary" onclick="setScroll(this);">Disable Auto Scroll</button></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        <% end %>
-        </td>
-      </tr>
-    <% end %>
+    <table id="builds" class="table">
     </table>
   </div>
-  </main>
-  </body>
-</html>
+<%= erb :footer %>

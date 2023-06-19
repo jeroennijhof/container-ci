@@ -1,130 +1,3 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#712cf9">
-    <title>Container CI</title>
-    <style>
-      html,
-      body {
-        overflow-x: hidden; /* Prevent scroll on narrow devices */
-      }
-
-      body {
-        padding-top: 56px;
-      }
-
-      .nav-scroller .nav {
-        color: rgba(255, 255, 255, .75);
-      }
-
-      .nav-scroller .nav-link {
-        padding-top: .75rem;
-        padding-bottom: .75rem;
-        font-size: .875rem;
-        color: #6c757d;
-      }
-
-      .nav-scroller .nav-link:hover {
-        color: #007bff;
-      }
-
-      .nav-scroller .active {
-        font-weight: 500;
-        color: #343a40;
-      }
-
-      .bg-purple {
-        background-color: #6f42c1;
-      }
-
-      .bi {
-        vertical-align: -.125em;
-        fill: currentColor;
-      }
-
-      .nav-scroller {
-        position: relative;
-        z-index: 2;
-        height: 2.75rem;
-        overflow-y: hidden;
-      }
-
-      .nav-scroller .nav {
-        display: flex;
-        flex-wrap: nowrap;
-        padding-bottom: 1rem;
-        margin-top: -1px;
-        overflow-x: auto;
-        text-align: center;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
-      }
-
-      i.spinner-border {
-        --bs-spinner-width: 1.5rem;
-        --bs-spinner-height: 1.5rem;
-        --bs-spinner-border-width: 0.15em;
-      }
-    </style>
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap-icons.css">
-    <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript">
-function build(trigger_id) {
-  $.ajax({
-    type: "POST",
-    url: "/trigger/" + trigger_id,
-    data: { "branch": $("#branch").val() },
-    success: function (result) {
-      $("#trigger-success").show(); 
-      window.setTimeout(function () { 
-         $("#trigger-success").hide(); 
-      }, 20000);
-    },
-    error: function (result, status) {
-      $("#trigger-error").show(); 
-    }
-  });
-}
-
-function hide(alert_id) {
-    $("#" + alert_id).hide(); 
-};
-
-$(document).ready(function () {
-  setTimeout(function () { 
-    window.location.reload()
-  }, 10000);
-});
-    </script>
-  </head>
-  <body class="bg-light">
-  <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/"><i class="bi bi-box align-top me-3"></i>Container CI</a>
-  </div>
-  </nav>
-
-  <div class="nav-scroller bg-body shadow-sm">
-  <nav class="nav" aria-label="Secondary navigation">
-    <a class="nav-link active" aria-current="page" href="/">Dashboard</a>
-    <!-- <a class="nav-link" href="#">CustomLink</a> -->
-  </nav>
-  </div>
-
-  <main class="container">
-  <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
-    <i class="bi bi-clipboard me-3" width="48" height="38"></i>
-    <div class="lh-1">
-      <h1 class="h6 mb-0 text-white lh-1">Projects</h1>
-    </div>
-  </div>
-
-  <div class="my-3 p-3 bg-body rounded shadow-sm">
-    <table class="table table-hover">
       <tr>
         <th scope="col">Status</th>
         <th scope="col">Name</th>
@@ -133,28 +6,14 @@ $(document).ready(function () {
       </tr>
       <% @projects.each do |project| %>
       <tr>
-        <td class="fs-4"><i class="bi <%= @status[project.last_build.status] unless project.builds.empty? %>"></i></td>
-        <td class="fs-5 align-middle"><a href="/<%= project.name %>"><%= project.name %></a></td>
-        <td class="fs-5 align-middle"><%= project.last_build.timestamp unless project.builds.empty? %></td>
+        <td class="fs-4"><div class="col"><i class="bi <%= @status[project.last_build.status] unless project.builds.empty? %>"></div></i></td>
+        <td class="fs-5 align-middle"><a class="col" href="/<%= project.name %>"><%= project.name %></a></td>
+        <td class="fs-5 align-middle"><div class="col"><%= project.last_build.timestamp unless project.builds.empty? %></div></td>
         <td class="fs-4 col-2">
-          <div class="input-group">
+          <div class="input-group col">
             <input id="branch" type="text" class="form-control" aria-label="branch" placeholder="branch">
             <button onclick="build('<%= project.settings['trigger'] %>')" type="button" class="btn btn-outline-success">Build</button>
           </div>
         </td>
       </tr>
       <% end %>
-    </table>
-  </div>
-
-  <div id="trigger-success" class="alert alert-success alert-dismissible fade show" role="alert" style="display: none">
-    <strong>Build triggered!</strong> Check the project page for progress.
-    <button onclick="hide('trigger-success')" type="button" class="btn-close"></button>
-  </div>
-  <div id="trigger-error" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
-    <strong>Build nog triggered!</strong> Something went wrong :/
-    <button onclick="hide('trigger-error')" type="button" class="btn-close"></button>
-  </div>
-  </main>
-  </body>
-</html>

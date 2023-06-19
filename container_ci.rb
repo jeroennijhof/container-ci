@@ -12,6 +12,14 @@ class ContainerCi < Sinatra::Base
   helpers ProjectHelper
 
   get '/?' do
+    erb :root
+  end
+
+  get '/favicon.ico?' do
+    nil
+  end
+
+  get '/projects?' do
     @projects = project_get
     @status = project_status_classes
     erb :projects
@@ -19,9 +27,20 @@ class ContainerCi < Sinatra::Base
 
   get '/:project/?' do
     @project = project_get_name(params[:project])
+    erb :project
+  end
+
+  get '/:project/builds?' do
+    @project = project_get_name(params[:project])
     @status = project_status_classes
     @status_buttons = project_status_buttons
-    erb :project
+    erb :builds
+  end
+
+  delete '/:project/builds?' do
+    @project = project_get_name(params[:project])
+    @project.delete_builds
+    nil
   end
 
   get '/:project/:build/:step/message/?' do

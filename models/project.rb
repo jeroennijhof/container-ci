@@ -5,9 +5,9 @@ require_relative 'build'
 class Project
   attr_reader :name, :settings, :builds
 
-  def initialize(project, project_settings, store)
-    @name = project
-    @settings = project_settings
+  def initialize(name, settings, store)
+    @name = name
+    @settings = settings
     @builds = {}
     return if store.nil?
 
@@ -18,5 +18,10 @@ class Project
 
   def last_build
     @builds[@builds.keys.reverse[0]] unless @builds.empty?
+  end
+
+  def delete_builds
+    Resque.redis.set(@name, '{}')
+    @builds = {}
   end
 end

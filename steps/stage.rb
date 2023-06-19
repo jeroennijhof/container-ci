@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative '../docker/docker'
+require_relative '../lib/docker/docker'
 
 class Stage
   @queue = :stage
 
-  def self.perform(project, project_settings, build, dockerfile)
-    project = Project.new(project, project_settings, Resque.redis.get(project))
-    docker = Docker.new("workspace/#{project.name}/#{build}")
+  def self.perform(settings, project_name, build, dockerfile)
+    project = Project.new(project_name, settings['projects'][project_name], Resque.redis.get(project_name))
+    docker = Docker.new(settings, "workspace/#{project.name}/#{build}")
     stage = dockerfile['stages'].shift
     message = ''
 
@@ -21,9 +21,9 @@ class Stage
     project.builds[build].steps[stage]['status'] = 'success'
     Resque.redis.set(project.name, project.builds.to_json)
     if dockerfile['stages'].empty?
-      Resque.enqueue(Deploy, project.name, project_settings, build, dockerfile)
+      Resque.enqueue(Deploy, settings, project.name, build, dockerfile)
     else
-      Resque.enqueue(Stage, project.name, project_settings, build, dockerfile)
+      Resque.enqueue(Stage, settings, project.name, build, dockerfile)
     end
   end
 end

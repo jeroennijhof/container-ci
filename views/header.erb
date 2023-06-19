@@ -1,13 +1,107 @@
-<html>
-<head>
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-  <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-<div class="container-fluid">
-<div class="row bg-dark text-light" style="height: 46px">
-  <span class="fs-4" style="padding-top: 4px">Container CI</span>
-</div>
-<div class="row" style="height: 100%">
-  <%= erb :sidebar %>
-  <div class="col bg-light text-dark border">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#712cf9">
+    <title>Container CI</title>
+    <style>
+      html,
+      body {
+        overflow-x: hidden; /* Prevent scroll on narrow devices */
+      }
+
+      body {
+        padding-top: 56px;
+      }
+
+      .nav-scroller .nav {
+        color: rgba(255, 255, 255, .75);
+      }
+
+      .nav-scroller .nav-link {
+        padding-top: .75rem;
+        padding-bottom: .75rem;
+        font-size: .875rem;
+        color: #6c757d;
+      }
+
+      .nav-scroller .nav-link:hover {
+        color: #007bff;
+      }
+
+      .nav-scroller .active {
+        font-weight: 500;
+        color: #343a40;
+      }
+
+      .bg-purple {
+        background-color: #6f42c1;
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      i.spinner-border {
+        --bs-spinner-width: 1.5rem;
+        --bs-spinner-height: 1.5rem;
+        --bs-spinner-border-width: 0.15em;
+      }
+
+      .modal {
+        --bs-modal-width: 60% !important;
+      }
+
+      th {
+        padding-left: .5rem;
+      }
+
+      pre {
+        background: #282b2e;
+        padding: 5px;
+      }
+
+      .col {
+        padding: .5rem 0 0 .5rem !important;
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-icons.css">
+    <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
+  </head>
+  <body class="bg-light">
+  <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/"><i class="bi bi-box align-top me-3"></i>Container CI</a>
+  </div>
+  </nav>
+
+  <div class="nav-scroller bg-body shadow-sm">
+  <nav class="nav" aria-label="Secondary navigation">
+    <a class="nav-link active" aria-current="page" href="/">Dashboard</a>
+    <!-- <a class="nav-link" href="#">CustomLink</a> -->
+  </nav>
+  </div>
+
+  <main class="container">

@@ -61,6 +61,13 @@ module ProjectHelper
     build_index = project.builds.size + 1
     project.builds[build_index.to_s] = Build.new
     Resque.redis.set(project.name, project.builds.to_json)
-    Resque.enqueue(Initialize, project.name, project_settings, build_index.to_s, branch)
+    Resque.enqueue(Initialize, settings_to_hash, project.name, build_index.to_s, branch)
+  end
+
+  def settings_to_hash
+    { docker: settings.docker,
+      k8s: settings.k8s,
+      environment: settings.environment,
+      projects: settings.projects }
   end
 end

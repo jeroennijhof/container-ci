@@ -11,8 +11,9 @@ module Step
   #
   class Error < Resque::Failure::Base
     def save
-      project = Project.new(payload['args'][0], payload['args'][1], Resque.redis.get(payload['args'][0]))
-      project.builds[payload['args'][2]].steps[payload['class'].downcase] = { 'status' => 'failed', 'message' => exception.to_s }
+      project = Project.new(payload['args'][1], payload['args'][0]['projects'][payload['args'][1]], Resque.redis.get(payload['args'][1]))
+      project.builds[payload['args'][2]].steps[payload['class'].downcase] =
+        { 'status' => 'failed', 'message' => exception.to_s }
       project.builds[payload['args'][2]].status = 'failed'
       Resque.redis.set(project.name, project.builds.to_json)
     rescue StandardError => e

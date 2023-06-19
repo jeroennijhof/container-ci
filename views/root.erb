@@ -1,0 +1,60 @@
+<%= erb :header %>
+  <script type="text/javascript">
+function build(trigger_id) {
+  $.ajax({
+    type: "POST",
+    url: "/trigger/" + trigger_id,
+    data: { "branch": $("#branch").val() },
+    success: function (result) {
+      $("#trigger-success").show(); 
+      window.setTimeout(function () { 
+         $("#trigger-success").hide(); 
+      }, 5000);
+    },
+    error: function (result, status) {
+      $("#trigger-error").show(); 
+    }
+  });
+};
+
+function hide(alert_id) {
+    $("#" + alert_id).hide(); 
+};
+
+function getProjects() {
+  $.ajax({
+    type: "GET",
+    url: "/projects",
+    ifModified: true,
+    success: function (result) {
+      $('#projects').html(result);
+    }
+  });
+};
+
+$(document).ready(function () {
+  getProjects();
+  const intervalID = setInterval(getProjects, 5000);
+});
+  </script>
+  <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
+    <i class="bi bi-clipboard me-3" width="48" height="38"></i>
+    <div class="lh-1">
+      <h1 class="h6 mb-0 text-white lh-1">Projects</h1>
+    </div>
+  </div>
+
+  <div class="my-3 p-3 bg-body rounded shadow-sm">
+    <table id="projects" class="table table-hover">
+    </table>
+  </div>
+
+  <div id="trigger-success" class="alert alert-success alert-dismissible fade show" role="alert" style="display: none">
+    <strong>Build triggered!</strong> Check the project page for progress.
+    <button onclick="hide('trigger-success')" type="button" class="btn-close"></button>
+  </div>
+  <div id="trigger-error" class="alert alert-warning alert-dismissible fade show" role="alert" style="display: none">
+    <strong>Build not triggered!</strong> Something went wrong :/
+    <button onclick="hide('trigger-error')" type="button" class="btn-close"></button>
+  </div>
+<%= erb :footer %>

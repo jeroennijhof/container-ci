@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 gem 'git'
 gem 'json'
 gem 'puma'
 gem 'rake'
-gem 'redis', '< 5'
+gem 'redis'
 gem 'resque'
 gem 'sinatra'
 gem 'sinatra-contrib'

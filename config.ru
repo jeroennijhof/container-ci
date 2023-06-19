@@ -12,7 +12,7 @@ config = ContainerCi.settings
 connection = { host: config.redis['host'], port: config.redis['port'] }
 connection[:username] = config.redis['username'] if config.redis.key?('username')
 connection[:password] = config.redis['password'] if config.redis.key?('password')
-connection[:scheme] = config.redis['scheme']
+connection[:ssl] = config.redis['ssl']
 connection[:ssl_params] = { verify_mode: OpenSSL::SSL::VERIFY_NONE }
 
 Resque.redis = Redis.new(connection)

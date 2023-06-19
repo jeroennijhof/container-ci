@@ -1,0 +1,4 @@
+AllCops:
+  NewCops: enable
+Metrics/MethodLength:
+  Max: 50

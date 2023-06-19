@@ -1,0 +1,38 @@
+      <tr>
+        <th scope="col">Build</th>
+        <th scope="col">Status</th>
+        <th scope="col">Steps</th>
+      </tr>
+    <% @project.builds.reverse_each do |key, value| %>
+      <tr>
+        <td class="align-middle"><div class="col"><%= key %></div></td>
+        <td class="fs-4"><div class="col"><i class="bi <%= @status[value.status] %>"></i></div></td>
+        <td class="col-10"><div class="col">
+        <% value.steps.each do |step, output| %>
+          <% step_name = step.sub('_', ' ') %>
+          <button type="button" class="btn <%= @status_buttons[output['status']] %>" style="margin-right: .5rem;" data-bs-toggle="modal" data-bs-target="#modal<%= key %><%= step %>" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>"><%= step_name %></button>
+
+          <div class="modal fade" id="modal<%= key %><%= step %>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="staticBackdropLabel"><%= step_name %></h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <pre class="border border-dark rounded text-light"><code id="code<%= key %><%= step %>"><%= output['message'] %></code></pre>
+                  <div class="d-flex">
+                    <% if output['status'] == 'pause' %>
+                    <div id="confirm"><button type="button" class="btn btn-outline-success" style="margin-right: 10px;" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="running">Deploy!</button></div>
+                    <div id="confirm"><button type="button" class="btn btn-outline-secondary" data-project="<%= @project.name %>" data-build="<%= key %>" data-step="<%= step %>" data-status="success">Cancel</button></div>
+                    <% end %>
+                    <div class="ms-auto"><button type="button" class="btn btn-outline-secondary" onclick="setScroll(this);">Disable Auto Scroll</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        </div></td>
+      </tr>
+    <% end %>

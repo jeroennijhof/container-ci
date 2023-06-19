@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-require_relative '../docker/docker'
+require_relative '../lib/docker/docker'
 
 class Deploy
   @queue = :deploy
 
-  def self.perform(project, project_settings, build, dockerfile)
-    project = Project.new(project, project_settings, Resque.redis.get(project))
-    project_settings['deploy'].each do |env, env_settings|
+  def self.perform(settings, project_name, build, dockerfile)
+    project = Project.new(project_name, settings['projects'][project_name], Resque.redis.get(project_name))
+    project.settings['deploy'].each do |env, env_settings|
       if env_settings['confirm'] == true
         message = 'Waiting for confirmation...<br/><br/>'
         project.builds[build].steps["deploy_#{env}"] = { 'status' => 'pause', 'message' => message }
@@ -17,12 +17,12 @@ class Deploy
 
       while project.builds[build].steps["deploy_#{env}"]['status'] == 'pause'
         sleep 1
-        project = Project.new(project.name, project_settings, Resque.redis.get(project.name))
+        project = Project.new(project.name, project.settings, Resque.redis.get(project.name))
       end
 
       break unless project.builds[build].steps["deploy_#{env}"]['status'] == 'running'
 
-      docker = Docker.new("workspace/#{project.name}/#{build}")
+      docker = Docker.new(settings, "workspace/#{project.name}/#{build}")
       message = "Deploying stable image for #{env}<br/>"
 
       containers = [{ 'name' => project.name,
