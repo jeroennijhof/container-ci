@@ -6,7 +6,6 @@ require_relative 'compose'
 class Docker
   def initialize(settings, workspace)
     @settings = settings
-    @env = settings['env']
     @workspace = workspace
   end
 
@@ -24,8 +23,18 @@ class Docker
     args
   end
 
+  def env(build_args: false)
+    args = []
+    @settings['env'].each do |key, value|
+      args.append('-e') unless build_args
+      args.append('--build-arg') if build_args
+      args.append("#{key}=#{value}")
+    end
+    args
+  end
+
   def command(*args)
-    stdin, stdout, stderr, waiter = Open3.popen3(@env, 'docker', *connection, *args, chdir: @workspace)
+    stdin, stdout, stderr, waiter = Open3.popen3('docker', *connection, *args, chdir: @workspace)
     stdin.close
     while (output = stdout.gets)
       yield output
@@ -34,21 +43,20 @@ class Docker
   end
 
   def command_err(*args)
-    stdin, stdout, stderr, waiter = Open3.popen3(@env, 'docker', *connection, *args, chdir: @workspace)
+    stdin, stdout, stderr, waiter = Open3.popen3('docker', *connection, *args, chdir: @workspace)
     stdin.close
-    stdout.close
     while (output = stderr.gets)
       yield output
     end
-    raise Error, stderr.read unless waiter.value.success?
+    raise Error, stdout.read unless waiter.value.success?
   end
 
   def build(*args, &block)
-    command_err('build', *args, &block)
+    command('build', *env(build_args: true), *args, &block)
   end
 
   def run(*args, &block)
-    command('run', *args, &block)
+    command('run', *env, *args, &block)
   end
 
   def compose_up(containers, &block)

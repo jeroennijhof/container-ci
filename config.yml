@@ -1,7 +1,7 @@
 development:
   redis:
     namespace: resque:container-ci
-    host: 172.17.0.1
+    host: redis
     ssl: false
     port: 6379
 

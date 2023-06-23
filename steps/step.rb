@@ -18,6 +18,7 @@ module Step
       Resque.redis.set(project.name, project.builds.to_json)
     rescue StandardError => e
       puts "Error: #{e}"
+      $stdout.flush
     end
   end
 end

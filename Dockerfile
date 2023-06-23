@@ -1,6 +1,8 @@
 FROM ruby:3.0.4 AS stable
 WORKDIR /app
 COPY . ./
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker/compose-bin /docker-compose /root/.docker/cli-plugins/docker-compose
 
 RUN rm -f Gemfile.lock
 RUN bundle install
